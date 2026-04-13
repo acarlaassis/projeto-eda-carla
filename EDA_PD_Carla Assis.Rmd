@@ -1,0 +1,176 @@
+---
+title: "Relatório de Análise Exploratória de Dados"
+author: "Carla Assis"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+## Referência da base de dados
+
+Fonte: [Kaggle - Lifestyle and Health Risk](https://www.kaggle.com/datasets/miadul/lifestyle-and-health-risk-prediction)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+![Exemplo de estilo de vida saudável](Habitos-saudaveis-e1688767419613-scaled.jpg)
+
+## ANÁLISE EXPLORATÓRIA DE DADOS: PROJETO 04
+
+### Carregando os pacotes:
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+library(ggthemes)
+library(nycflights13)
+library(skimr)
+library(readr)
+library(gt)
+library(corrplot)
+library(GGally)
+library(summarytools)
+library(gtsummary)
+library(rstatix)
+library(patchwork)
+library(tidyr)
+library(dplyr)
+
+```
+
+### Variáveis da base de dados **`Lifestyle and Health Risk Prediction`**: [`https://www.kaggle.com/datasets/miadul/lifestyle-and-health-risk-prediction?resource=download`](https://www.kaggle.com/datasets/miadul/lifestyle-and-health-risk-prediction?resource=download){.uri}
+
+```{r}
+df <- read.csv("Lifestyle_and_Health_Risk_Prediction_Synthetic_Dataset.csv")
+
+df_num <- df |> 
+  select(age, bmi, sleep, exercise) #idade,índice corporal, horas de sono, consumo de açúcar
+```
+
+Será analisado: idade, saúde (bmi), comportamento (sono + exercícios)
+
+```{r}
+#questão 03
+descr(df_num)
+```
+
+```{r}
+#questão 04
+library(GGally)
+
+ggpairs(df_num)
+```
+
+```{r}
+#questão 05
+
+
+df_num <- df |>
+  select(age, bmi, sleep, weight)
+
+#necessário trocar a variável exercise por uma númerica de verdade "weight"
+```
+
+```{r}
+str(df_num)
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+df_num <- df |>
+  select(age, bmi, sleep, weight)
+
+# Histograma - age
+ggplot(df_num, aes(x = age)) +
+  geom_histogram(bins = 30, fill = "blue", alpha = 0.7)
+
+# Histograma - bmi
+ggplot(df_num, aes(x = bmi)) +
+  geom_histogram(bins = 30, fill = "green", alpha = 0.7)
+
+# Histograma - sleep
+ggplot(df_num, aes(x = sleep)) +
+  geom_histogram(bins = 30, fill = "purple", alpha = 0.7)
+
+# Histograma - weight
+ggplot(df_num, aes(x = weight)) +
+  geom_histogram(bins = 30, fill = "orange", alpha = 0.7)
+```
+
+```{r}
+#questão 05 letra c:
+library(ggpubr)
+
+# Q-Q plot - age
+ggqqplot(df_num$age)
+
+# Q-Q plot - bmi
+ggqqplot(df_num$bmi)
+
+# Q-Q plot - sleep
+ggqqplot(df_num$sleep)
+
+# Q-Q plot - weight
+ggqqplot(df_num$weight)
+```
+
+```{r}
+#questão 5 letra d:
+shapiro.test(df_num$age)
+shapiro.test(df_num$bmi)
+shapiro.test(df_num$sleep)
+shapiro.test(df_num$weight)
+```
+
+```{r}
+#questão 07, cálculo da completudo:
+# Percentual de valores não nulos (completude)
+
+completude <- sapply(df, function(x) {
+  sum(!is.na(x)) / length(x) * 100
+})
+
+completude
+```
+
+## Correção para inserir dados faltantes:
+
+```{r}
+set.seed(123)
+
+df_missing <- df
+
+# Inserindo NA em 5% dos dados
+df_missing$bmi[sample(1:nrow(df), 0.05 * nrow(df))] <- NA
+df_missing$sleep[sample(1:nrow(df), 0.05 * nrow(df))] <- NA
+```
+
+```{r}
+#questão 07 editada para dados faltantes:
+
+completude <- sapply(df_missing, function(x) {
+  sum(!is.na(x)) / length(x) * 100
+})
+
+completude
+```
+
+```{r}
+#questão 08
+library(mice)
+
+df_mice <- df_missing |>
+  select(age, bmi, sleep, weight)
+
+imputacao <- mice(df_mice, m = 5, method = 'pmm', seed = 123)
+
+df_imputado <- complete(imputacao)
+```
+
+```{r}
+#questão 09
+#em um RScript
+```
